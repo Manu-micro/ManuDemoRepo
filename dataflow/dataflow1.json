@@ -14,6 +14,10 @@
 			],
 			"sinks": [
 				{
+					"dataset": {
+						"referenceName": "ExcelDestination",
+						"type": "DatasetReference"
+					},
 					"name": "sink1"
 				}
 			],
@@ -24,6 +28,9 @@
 				"     ignoreNoFilesFound: false) ~> ExcelSource",
 				"ExcelSource sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> sink1"
 			]
