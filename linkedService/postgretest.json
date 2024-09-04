@@ -1,0 +1,12 @@
+{
+	"name": "postgretest",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzurePostgreSql",
+		"typeProperties": {
+			"connectionString": "host=pgsql.postgres.database.azure.com;port=5432;database=postgres;uid=pgsqladmin1;encryptionmethod=6;validateservercertificate=0",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDY0NUQyMkY0LTU4M0EtNDZGRi05NzYwLTc2OTFBMzE3Q0VDQV82Mzc5OTgxNS0wZDhmLTRhZTgtODI1MC0yY2Q2NDZkNGI2MTkiDQp9"
+		}
+	}
+}
