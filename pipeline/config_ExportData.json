@@ -1,0 +1,157 @@
+{
+	"name": "config_ExportData",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get Config",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.00:05:00",
+					"retry": 2,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "JsonSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "config",
+						"type": "DatasetReference",
+						"parameters": {
+							"fileName": {
+								"value": "@variables('fileName')",
+								"type": "Expression"
+							},
+							"folderPath": {
+								"value": "@variables('folderPath')",
+								"type": "Expression"
+							}
+						}
+					}
+				}
+			},
+			{
+				"name": "ForEach Export Scope",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Get Config",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get Config').output.firstRow.scopes",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Get exports for scope",
+							"type": "WebActivity",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.00:05:00",
+								"retry": 2,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"method": "GET",
+								"url": {
+									"value": "@{variables('resourceManagementUri')}@{item().scope}/providers/Microsoft.CostManagement/exports?api-version=2023-07-01-preview",
+									"type": "Expression"
+								},
+								"authentication": {
+									"type": "MSI",
+									"resource": {
+										"value": "@variables('resourceManagementUri')",
+										"type": "Expression"
+									}
+								}
+							}
+						},
+						{
+							"name": "Run exports for scope",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "Get exports for scope",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "config_RunExports",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"ExportScopes": {
+										"value": "@activity('Get exports for scope').output.value",
+										"type": "Expression"
+									},
+									"Recurrence": {
+										"value": "@pipeline().parameters.Recurrence",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"concurrency": 1,
+		"parameters": {
+			"Recurrence": {
+				"type": "string",
+				"defaultValue": "Daily"
+			}
+		},
+		"variables": {
+			"fileName": {
+				"type": "String",
+				"defaultValue": "settings.json"
+			},
+			"folderPath": {
+				"type": "String",
+				"defaultValue": "config"
+			},
+			"finOpsHub": {
+				"type": "String",
+				"defaultValue": "finops-hub"
+			},
+			"resourceManagementUri": {
+				"type": "String",
+				"defaultValue": "https://management.azure.com/"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-09-09T13:53:18Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
