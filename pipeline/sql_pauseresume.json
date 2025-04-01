@@ -1,0 +1,125 @@
+{
+	"name": "sql_pauseresume",
+	"properties": {
+		"activities": [
+			{
+				"name": "sqlpool",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": "https://management.azure.com/subscriptions/d54c4803-75cd-4b29-981e-c0171cc36539/resourceGroups/DIO_Global_Ops_Data_Group/providers/Microsoft.Synapse/workspaces/dio-data-synapse/sqlPools?api-version=2021-06-01",
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"authentication": {
+						"resource": "https://management.azure.com",
+						"credential": {
+							"referenceName": "Credential1",
+							"type": "CredentialReference"
+						}
+					}
+				}
+			},
+			{
+				"name": "If Condition1",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "sqlpool",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(activity('sqlpool').output, 'online')",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "Resumesqlpool",
+							"type": "WebActivity",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"method": "POST",
+								"url": {
+									"value": "https://management.azure.com/subscriptions/d54c4803-75cd-4b29-981e-c0171cc36539/resourceGroups/DIO_Global_Ops_Data_Group/providers/Microsoft.Synapse/workspaces/dio-data-synapse/sqlPools/activity('sqlpool').output.name/resume?api-version=2021-06-01",
+									"type": "Expression"
+								},
+								"connectVia": {
+									"referenceName": "AutoResolveIntegrationRuntime",
+									"type": "IntegrationRuntimeReference"
+								},
+								"authentication": {
+									"type": "ServicePrincipal",
+									"userTenant": "5ae1af62-9505-4097-a69a-c1553ef7840e",
+									"password": {
+										"type": "SecureString",
+										"value": "**********"
+									}
+								}
+							}
+						}
+					],
+					"ifTrueActivities": [
+						{
+							"name": "Pausesqlpool",
+							"type": "WebActivity",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"method": "POST",
+								"url": {
+									"value": "https://management.azure.com/subscriptions/d54c4803-75cd-4b29-981e-c0171cc36539/resourceGroups/DIO_Global_Ops_Data_Group/providers/Microsoft.Synapse/workspaces/dio-data-synapse/sqlPools/activity('sqlpool').output.name/pause?api-version=2021-06-01",
+									"type": "Expression"
+								},
+								"connectVia": {
+									"referenceName": "AutoResolveIntegrationRuntime",
+									"type": "IntegrationRuntimeReference"
+								},
+								"authentication": {
+									"type": "ServicePrincipal",
+									"userTenant": "5ae1af62-9505-4097-a69a-c1553ef7840e",
+									"password": {
+										"type": "SecureString",
+										"value": "**********"
+									}
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2025-01-22T14:16:59Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}
